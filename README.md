@@ -1,4 +1,4 @@
-![GitHub Banners](https://github.com/user-attachments/assets/41c39981-b81a-4162-a46e-70c373336d71)
+![GitHub Banners (13)](https://github.com/user-attachments/assets/26277955-c4f6-4d73-82f9-ff379d51338e)
 
 > ✅ *Mastering design patterns leads to cleaner, more reusable, and efficient software architecture!*
 
