@@ -41,7 +41,7 @@ These patterns focus on communication between objects and define workflows.
 - **Visitor** → Adds new operations to an object structure without modifying its classes.  
 
 ## Supported Languages:
-- Python
+- [Python Design Patterns](python-design-patterns.md)
 - C#
 - C++
 - GO
