@@ -42,6 +42,7 @@ These patterns focus on communication between objects and define workflows.
 
 ## Supported Languages:
 - [Python Design Patterns](python-design-patterns.md)
+- [JavaScript Design Patterns](javascript-design-patterns.md)
 - C#
 - C++
 - GO
