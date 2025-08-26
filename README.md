@@ -2,10 +2,9 @@
 
 > ✅ *Mastering design patterns leads to cleaner, more reusable, and efficient software architecture!*
 
-## Introduction  
 Design patterns are proven solutions to common software design problems. They improve code reusability, maintainability, and scalability by providing structured approaches to problem-solving.  
 
-### 1. Creational Patterns (Object Creation)  
+### Creational Patterns (Object Creation)  
 These patterns focus on object instantiation while maintaining flexibility and efficiency.  
 
 - **Abstract Factory**: Creates families of related objects without specifying their concrete classes.  
@@ -14,7 +13,7 @@ These patterns focus on object instantiation while maintaining flexibility and e
 - **Prototype**: Creates new objects by copying an existing instance (useful for expensive object creation).  
 - **Singleton**: Ensures only one instance of a class exists globally.  
 
-### 2. Structural Patterns (Class & Object Composition)  
+### Structural Patterns (Class & Object Composition)  
 These patterns simplify the design by organizing object relationships efficiently.  
 
 - **Adapter (Composition & Inheritance)** → Converts one interface to another to enable compatibility.  
@@ -25,7 +24,7 @@ These patterns simplify the design by organizing object relationships efficientl
 - **Flyweight**: Reduces memory usage by sharing common object instances.  
 - **Proxy**: Controls access to an object, often used for security or performance optimizations.  
 
-### 3. Behavioral Patterns (Object Interaction)  
+### Behavioral Patterns (Object Interaction)  
 These patterns focus on communication between objects and define workflows.  
 
 - **Chain of Responsibility**: Passes a request along a chain of handlers until one handles it.  
