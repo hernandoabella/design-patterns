@@ -40,7 +40,5 @@ Design patterns are proven solutions to common software design problems. They im
 - **Observer:** Establishes a one-to-many dependency where observers get notified of state changes.  
 - **State:** Allows an object to change its behavior when its state changes.  
 - **Strategy:** Defines interchangeable algorithms that can be selected dynamically.  
-- **Template Method:** Defines a skeleton for an algorithm, allowing subclasses to modify specific steps.  
-
-### Visitor
-Adds new operations to an object structure without modifying its classes.
+- **Template Method:** Defines a skeleton for an algorithm, allowing subclasses to modify specific steps.
+- **Visitor:** Adds new operations to an object structure without modifying its classes.
