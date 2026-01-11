@@ -19,6 +19,7 @@ export interface PatternData {
     diagram: string;
     roles: PatternRole[];
     code: Record<Language, string>;
+    diagramDescription: string;
 }
 
 export const PATTERNS_REGISTRY: Record<string, PatternData> = {
@@ -28,6 +29,9 @@ export const PATTERNS_REGISTRY: Record<string, PatternData> = {
         category: "Creational",
         tagline: "The Factory of Factories.",
         description: "Provides an interface for creating families of related or dependent objects without specifying their concrete classes.",
+
+        // --- NUEVO CAMPO PARA EL COMPONENTE ---
+        diagramDescription: "The diagram illustrates a furniture factory hierarchy. FurnitureFactory defines the base interface, while ModernFactory and VictorianFactory ensure that created products (Chair, Sofa) always belong to the same design family, preventing the mixing of incompatible styles.",
         diagram: `classDiagram
       class FurnitureFactory { <<interface>> +createChair() Chair +createSofa() Sofa }
       class ModernFactory { +createChair() ModernChair +createSofa() ModernSofa }
@@ -40,6 +44,7 @@ export const PATTERNS_REGISTRY: Record<string, PatternData> = {
       Chair <|-- VictorianChair
       Sofa <|-- ModernSofa
       Sofa <|-- VictorianSofa`,
+
         roles: [
             {
                 title: "Abstract Factory",
@@ -138,7 +143,7 @@ class ModernChair implements Chair {
         category: "Creational",
         tagline: "Define once, instantiate anywhere.",
         description: "Provides an interface for creating objects in a superclass, but allows subclasses to alter the type of objects that will be created.",
-        diagram: `classDiagram
+        diagramDescription: "This diagram shows the relationship between the Creator and Product hierarchies. The 'factoryMethod()' in the base Creator class returns a Product interface, while ConcreteCreators override this method to instantiate and return specific ConcreteProducts without the client knowing the final class type.", diagram: `classDiagram
       class Creator { <<abstract>> +factoryMethod() Product }
       class ConcreteCreatorA { +factoryMethod() ProductA }
       class ConcreteCreatorB { +factoryMethod() ProductB }
@@ -263,7 +268,7 @@ class RoadLogistics extends Logistics {
         category: "Creational",
         tagline: "Cloning of instances.",
         description: "Allows copying existing objects without making your code dependent on their classes, delegating the cloning process to the objects themselves.",
-        diagram: `classDiagram
+        diagramDescription: "The diagram shows the Prototype interface with a 'clone()' method. Instead of instantiating classes directly via a constructor, the client interacts with an existing object and requests a copy. This is particularly useful when the cost of creating a new instance from scratch is more expensive than cloning an existing one.", diagram: `classDiagram
       class Prototype { <<interface>> +clone() Prototype }
       class ConcretePrototype { -field1 +clone() Prototype }
       class SubPrototype { -field2 +clone() Prototype }
@@ -346,7 +351,7 @@ class Circle extends Shape {
         category: "Creational",
         tagline: "Global unique instance.",
         description: "Ensures that a class has only one instance and provides a global point of access to it.",
-        diagram: `classDiagram
+        diagramDescription: "This structure highlights the self-referencing nature of the pattern. The class contains a private static instance of itself and a private constructor to prevent external instantiation. Access is provided solely through the 'getInstance()' method, ensuring exactly one instance exists throughout the application lifecycle.", diagram: `classDiagram
       class Singleton {
           -Singleton instance$
           -Singleton()
@@ -425,7 +430,7 @@ console.log(s1 === s2); // true`,
         category: "Creational",
         tagline: "Step-by-step construction.",
         description: "Separates the construction of a complex object from its representation so that the same construction process can create different representations.",
-        diagram: `classDiagram
+        diagramDescription: "This diagram separates the construction logic from the final representation. The Director controls the construction steps, while the Builder interface provides the methods to build specific parts. This allows the same construction process to create different configurations of a complex Product object.", diagram: `classDiagram
       class Director { +make(builder) }
       class Builder { <<interface>> +reset() +buildStepA() +buildStepB() +getResult() }
       class ConcreteBuilder { -product +reset() +buildStepA() +buildStepB() +getResult() }
@@ -524,7 +529,7 @@ User user = new User.UserBuilder("John").age(30).build();`
         category: "Structural",
         tagline: "Making incompatible interfaces compatible.",
         description: "Allows objects with incompatible interfaces to collaborate by wrapping one of them in an adapter that translates the calls.",
-        diagram: `classDiagram
+        diagramDescription: "The diagram shows how the Adapter acts as a wrapper that converts the interface of a class (Adaptee) into another interface the client expects. This allows classes with incompatible interfaces to work together by delegating calls from the 'request()' method to the 'specificRequest()' of the service.", diagram: `classDiagram
       class Client
       class Target { <<interface>> +request() }
       class Adapter { -adaptee: Adaptee +request() }
@@ -632,7 +637,7 @@ class Adapter implements Target {
         category: "Structural",
         tagline: "Decouples abstraction from implementation.",
         description: "Splits a large class or a set of closely related classes into two separate hierarchies—abstraction and implementation—which can be developed independently of each other.",
-        diagram: `classDiagram
+        diagramDescription: "This structure illustrates the separation of an abstraction from its implementation. By using a bridge (the 'imp' reference), the Abstraction hierarchy and the Implementation hierarchy can grow independently. This avoids a 'class explosion' where every new feature would require a subclass for every platform.", diagram: `classDiagram
       class Abstraction { -imp: Implementor +feature() }
       class RefinedAbstraction { +feature() }
       class Implementor { <<interface>> +method() }
@@ -717,7 +722,7 @@ class RemoteControl {
         category: "Structural",
         tagline: "Uniform tree structures.",
         description: "Lets you compose objects into tree structures to represent part-whole hierarchies. Composite lets clients treat individual objects and compositions of objects uniformly.",
-        diagram: `classDiagram
+        diagramDescription: "The diagram visualizes a tree structure where individual objects (Leaf) and compositions of objects (Composite) share the same Component interface. This recursive relationship allows clients to treat single objects and collections uniformly, simplifying the processing of complex hierarchies.", diagram: `classDiagram
       class Component { <<interface>> +execute() }
       class Leaf { +execute() }
       class Composite { -children: List~Component~ +add(c) +remove(c) +execute() }
@@ -817,7 +822,7 @@ class Composite implements Component {
         category: "Structural",
         tagline: "Dynamically adding responsibilities.",
         description: "Allows behavior to be added to an individual object, either statically or dynamically, without affecting the behavior of other objects from the same class. It uses a wrapper approach.",
-        diagram: `classDiagram
+        diagramDescription: "This pattern uses a 'wraps' relationship to add new behaviors to objects dynamically. The Decorator implements the same interface as the ConcreteComponent it wraps, allowing you to stack multiple decorators (like logging or encryption) on top of a single object without modifying its core code.", diagram: `classDiagram
       class Component { <<interface>> +execute() }
       class ConcreteComponent { +execute() }
       class BaseDecorator { -wrapper: Component +execute() }
@@ -918,7 +923,7 @@ class EncryptionDecorator implements DataSource {
         category: "Structural",
         tagline: "Simplified interface for complex systems.",
         description: "Provides a simplified interface to a library, a framework, or any other complex set of classes.",
-        diagram: `classDiagram
+        diagramDescription: "The diagram shows a simplified entry point into a complex system of classes. The Facade provides a higher-level interface that delegates work to the appropriate sub-system components, shielding the client from the complexity of the internal library or framework and reducing coupling.", diagram: `classDiagram
       class Client
       class Facade { +simpleOperation() }
       class SubsystemA { +operation1() }
@@ -1007,7 +1012,7 @@ class Facade {
         category: "Structural",
         tagline: "Massive memory optimization.",
         description: "Allows fitting more objects into the available amount of RAM by sharing common parts of state between multiple objects instead of keeping all of the data in each object.",
-        diagram: `classDiagram
+        diagramDescription: "This structure focuses on memory optimization. It separates 'intrinsic' state (shared data stored in the Flyweight) from 'extrinsic' state (contextual data passed at runtime). The FlyweightFactory ensures that shared objects are reused instead of being recreated, significantly reducing the application's memory footprint.", diagram: `classDiagram
       class FlyweightFactory { -flyweights: Map +getFlyweight(state) }
       class Flyweight { +operation(extrinsicState) }
       class Context { -extrinsicState -flyweight +operation() }
@@ -1106,7 +1111,7 @@ class FlyweightFactory {
         category: "Structural",
         tagline: "Access control and intermediation.",
         description: "Provides a substitute or placeholder for another object to control access to it, allowing you to perform something either before or after the request reaches the original object.",
-        diagram: `classDiagram
+        diagramDescription: "The diagram illustrates an intermediary object (Proxy) that controls access to the RealService. Since both implement the same interface, the Proxy can stand in for the real object to handle tasks like lazy initialization, access control, or caching before delegating the request to the original service.", diagram: `classDiagram
       class Subject { <<interface>> +request() }
       class RealSubject { +request() }
       class Proxy { -realSubject: RealSubject +request() +checkAccess() }
@@ -1198,7 +1203,7 @@ class DatabaseProxy implements Database {
         category: "Behavioral",
         tagline: "Delegable sequential processing.",
         description: "Allows passing requests along a chain of handlers. Upon receiving a request, each handler decides either to process the request or to pass it to the next handler in the chain.",
-        diagram: `classDiagram
+        diagramDescription: "The diagram shows a series of handler objects linked together. Each handler has a reference to the next. When a request enters the chain, it passes along the line until a ConcreteHandler decides to process it, decoupling the sender from the specific receiver.", diagram: `classDiagram
       class Handler { <<interface>> +setNext(h) +handle(request) }
       class BaseHandler { -next: Handler +setNext(h) +handle(request) }
       class ConcreteHandlerA { +handle(request) }
@@ -1302,7 +1307,7 @@ class SupportLevel1 extends Handler {
         category: "Behavioral",
         tagline: "Encapsulation of actions.",
         description: "Turns a request into a stand-alone object that contains all information about the request. This transformation lets you pass requests as a method arguments, delay or queue a request's execution, and support undoable operations.",
-        diagram: `classDiagram
+        diagramDescription: "This structure encapsulates a request as an object. The Invoker triggers the command without knowing how the action is performed, while the ConcreteCommand links an action to a Receiver, allowing for undoable operations and request queuing.", diagram: `classDiagram
       class Command { <<interface>> +execute() +undo() }
       class ConcreteCommand { -receiver -state +execute() +undo() }
       class Receiver { +operation() }
@@ -1411,7 +1416,7 @@ class InsertCommand implements Command {
         category: "Behavioral",
         tagline: "Grammar evaluation engine.",
         description: "Defines a representation for a language's grammar along with an interpreter that uses the representation to interpret sentences in the language.",
-        diagram: `classDiagram
+        diagramDescription: "The diagram illustrates how the traversal logic is extracted from a Collection into an Iterator object. This allows different traversal strategies (like depth-first or breadth-first) to be implemented without changing the collection's structure.", diagram: `classDiagram
       class Expression { <<interface>> +interpret(context) }
       class TerminalExpression { +interpret(context) }
       class NonTerminalExpression { -expression: Expression +interpret(context) }
@@ -1503,7 +1508,7 @@ class Minus implements Expression {
         category: "Behavioral",
         tagline: "Uniform traversal of collections.",
         description: "Provides a way to access the elements of an aggregate object sequentially without exposing its underlying representation (list, stack, tree, etc.).",
-        diagram: `classDiagram
+        diagramDescription: "This pattern shows a central Mediator object that coordinates communication between various 'Colleague' objects. Instead of components talking to each other directly (creating a chaotic web), they only talk to the Mediator, reducing system coupling.", diagram: `classDiagram
       class Iterable { <<interface>> +createIterator() Iterator }
       class Iterator { <<interface>> +getNext() +hasMore() }
       class ConcreteCollection { +createIterator() Iterator }
@@ -1606,7 +1611,7 @@ class NameRepository {
         category: "Behavioral",
         tagline: "Centralized communication hub.",
         description: "Reduces coupling between components of a program by making them communicate indirectly, through a special mediator object.",
-        diagram: `classDiagram
+        diagramDescription: "This pattern shows a central Mediator object that coordinates communication between various 'Colleague' objects. Instead of components talking to each other directly (creating a chaotic web), they only talk to the Mediator, reducing system coupling.", diagram: `classDiagram
       class Mediator { <<interface>> +notify(sender, event) }
       class ConcreteMediator { -componentA -componentB +notify(sender, event) }
       class Component { -mediator: Mediator +setMediator(m) }
@@ -1698,7 +1703,7 @@ abstract class Colleague {
         category: "Behavioral",
         tagline: "Snapshot and restore functionality.",
         description: "Captures and externalizes an object's internal state so that the object can be restored to this state later, without violating encapsulation.",
-        diagram: `classDiagram
+        diagramDescription: "The diagram illustrates the separation between the Originator (the object with state), the Memento (the state snapshot), and the Caretaker (the history keeper). This structure allows an object to export and restore its internal state without exposing its private fields or breaking encapsulation.", diagram: `classDiagram
       class Originator { -state +save() Memento +restore(m: Memento) }
       class Memento { -state +getState() }
       class Caretaker { -history: Memento[] +undo() }
@@ -1789,7 +1794,7 @@ public class Originator {
         category: "Behavioral",
         tagline: "Event-driven state synchronization.",
         description: "Defines a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically.",
-        diagram: `classDiagram
+        diagramDescription: "The diagram visualizes a one-to-many relationship. The Subject maintains a list of Observers; when the Subject's state changes, it automatically notifies all subscribers by calling their 'update()' method, ensuring synchronization across components.", diagram: `classDiagram
       class Subject { -observers: List~Observer~ +attach(o) +detach(o) +notify() }
       class Observer { <<interface>> +update(subject) }
       class ConcreteSubject { -state +getState() +setState() }
@@ -1890,7 +1895,7 @@ class RadioStation implements Observer {
         category: "Behavioral",
         tagline: "Behavioral changes based on internal status.",
         description: "Lets an object alter its behavior when its internal state changes. The object will appear to change its class.",
-        diagram: `classDiagram
+        diagramDescription: "This structure allows an object to change its behavior when its internal state changes. The Context delegates state-specific work to a State object. Switching states effectively changes the class of the Context at runtime from the perspective of the client.", diagram: `classDiagram
       class Context { -state: State +request() +transitionTo(s) }
       class State { <<interface>> +handle() }
       class ConcreteStateA { +handle() }
@@ -1994,7 +1999,7 @@ class Context {
         category: "Behavioral",
         tagline: "Interchangeable algorithms at runtime.",
         description: "Defines a family of algorithms, encapsulates each one, and makes them interchangeable. Strategy lets the algorithm vary independently from clients that use it.",
-        diagram: `classDiagram
+        diagramDescription: "The diagram shows a Context that uses an interface to trigger an algorithm. Different ConcreteStrategies implement different versions of the algorithm (e.g., different sorting methods), allowing the client to swap logic dynamically at runtime.", diagram: `classDiagram
       class Context { -strategy: Strategy +setStrategy(s) +execute() }
       class Strategy { <<interface>> +executeAlgorithm(data) }
       class ConcreteStrategyA { +executeAlgorithm(data) }
@@ -2084,7 +2089,7 @@ class ShoppingCart {
         category: "Behavioral",
         tagline: "Skeleton of an algorithm with pluggable steps.",
         description: "Defines the skeleton of an algorithm in the superclass but lets subclasses override specific steps of the algorithm without changing its structure.",
-        diagram: `classDiagram
+        diagramDescription: "This structure defines the skeleton of an algorithm in a base class method. It allows subclasses to override specific 'hook' steps of the algorithm without changing the overall structure and sequence of execution defined in the parent.", diagram: `classDiagram
       class DataMiner { <<abstract>> +templateMethod() +openFile()* +extractData()* +closeFile() +hook() }
       class PDFMiner { +openFile() +extractData() }
       class CSVMiner { +openFile() +extractData() }
@@ -2175,7 +2180,7 @@ class Football extends Game {
         category: "Behavioral",
         tagline: "Separate algorithms from object structures.",
         description: "Lets you define a new operation without changing the classes of the elements on which it operates.",
-        diagram: `classDiagram
+        diagramDescription: "The diagram illustrates a way to add new operations to an existing object structure without modifying the classes. The Visitor 'visits' each element, and the elements 'accept' the visitor, delegating the operation back to the visitor object.", diagram: `classDiagram
       class Visitor { <<interface>> +visitConcreteElementA(e) +visitConcreteElementB(e) }
       class ConcreteVisitor { +visitConcreteElementA(e) +visitConcreteElementB(e) }
       class Element { <<interface>> +accept(v: Visitor) }
