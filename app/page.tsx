@@ -13,7 +13,9 @@ import {
   Copy, Check, Hash, Box, 
   ChevronRight, Maximize2, X, Layers, 
   Folder, Sparkles, Zap, ShieldAlert,
-  Info
+  Info,
+  Code,
+  FileCode
 } from "lucide-react";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -163,11 +165,10 @@ export default function DesignPatternsPage() {
       <aside className="w-80 border-r border-white/10 bg-black/20 backdrop-blur-xl flex flex-col shrink-0 h-full relative z-10">
         <div className="p-8 border-b border-white/10 flex items-center gap-4">
           <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-3 rounded-2xl shadow-2xl shadow-indigo-500/50">
-            <Folder size={24} className="text-white" />
+            <FileCode size={24} className="text-white" />
           </div>
           <div>
             <span className="font-black text-xl tracking-tight block">Design Patterns</span>
-            <span className="text-xs text-indigo-300">Interactive Explorer</span>
           </div>
         </div>
 
