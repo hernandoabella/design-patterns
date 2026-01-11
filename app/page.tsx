@@ -1,220 +1,217 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import mermaid from "mermaid";
 import { 
-  ChevronRight, Copy, Check, Cpu, Lightbulb, Zap, Boxes, 
-  ExternalLink, ArrowRight, Play, Terminal, Loader2,
-  Layout, Fingerprint, Code2, Layers, BookOpen, Microscope
+  PATTERNS_REGISTRY, 
+  LANGUAGES, 
+  type Language, 
+  type PatternRole, 
+  type PatternData 
+} from "@/data/patterns"; 
+import { 
+  Copy, Check, Layout, Hash, Box, 
+  ChevronRight, Maximize2, X, Boxes, Zap, 
+  Fingerprint, Hammer, Settings, Layers, 
+  UserCheck, Database, ShieldAlert 
 } from "lucide-react";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
-import mermaid from "mermaid";
+import { vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
-// --- Mermaid Config ---
-mermaid.initialize({ startOnLoad: true, theme: "neutral" });
+// --- CONFIGURACIÓN DE MERMAID ---
+mermaid.initialize({
+  startOnLoad: true,
+  theme: "neutral",
+  securityLevel: "loose",
+  fontFamily: "var(--font-geist-sans)",
+});
 
-const MermaidDiagram = ({ chart }: { chart: string }) => {
+// --- COMPONENTE RENDERIZADOR DE DIAGRAMAS ---
+const Mermaid = ({ chart }: { chart: string }) => {
   const ref = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (ref.current) {
+      ref.current.removeAttribute("data-processed");
       mermaid.contentLoaded();
-      mermaid.render("mermaid-svg", chart).then(({ svg }) => {
-        if (ref.current) ref.current.innerHTML = svg;
-      });
     }
   }, [chart]);
-  return <div ref={ref} className="flex justify-center py-8" />;
+
+  return (
+    <div key={chart} className="mermaid flex justify-center items-center w-full scale-90 md:scale-100" ref={ref}>
+      {chart}
+    </div>
+  );
 };
 
-type Language = "python" | "javascript" | "java";
-const LANGUAGES: Language[] = ["python", "javascript", "java"];
-
-const PATTERN = {
-  name: "Abstract Factory",
-  category: "Creational",
-  tagline: "The Factory of Factories.",
-  description: "Ensures that products from a factory are compatible with each other by creating families of related objects.",
-  diagram: `classDiagram
-    class FurnitureFactory { <<interface>> +createChair() Chair }
-    class ModernFactory { +createChair() ModernChair }
-    class VictorianFactory { +createChair() VictorianChair }
-    FurnitureFactory <|-- ModernFactory
-    FurnitureFactory <|-- VictorianFactory`,
-  roles: [
-    { title: "Abstract Factory", description: "Declares an interface for operations that create abstract products.", icon: Boxes },
-    { title: "Concrete Factory", description: "Implements operations to create concrete product objects (e.g., Modern style).", icon: Zap },
-    { title: "Abstract Product", description: "Declares an interface for a type of product object (e.g., any Chair).", icon: Layout },
-    { title: "Client", description: "Only uses interfaces declared by Abstract Factory and Abstract Product classes.", icon: Fingerprint }
-  ],
-  code: {
-    python: `from abc import ABC, abstractmethod
-
-# --- 1. ABSTRACT PRODUCTS ---
-# These define the 'Contract'. Any chair must have 'sit_on'.
-class Chair(ABC):
-    @abstractmethod
-    def sit_on(self) -> str: pass
-
-# --- 2. CONCRETE PRODUCTS ---
-# Specific versions of the products.
-class ModernChair(Chair):
-    def sit_on(self): return "Sitting on a sleek Modern Chair."
-
-class VictorianChair(Chair):
-    def sit_on(self): return "Sitting on a royal Victorian Chair."
-
-# --- 3. ABSTRACT FACTORY ---
-# The interface that groups related products.
-class FurnitureFactory(ABC):
-    @abstractmethod
-    def create_chair(self) -> Chair: pass
-
-# --- 4. CONCRETE FACTORIES ---
-# This factory only makes Modern furniture.
-class ModernFactory(FurnitureFactory):
-    def create_chair(self): return ModernChair()
-
-# This factory only makes Victorian furniture.
-class VictorianFactory(FurnitureFactory):
-    def create_chair(self): return VictorianChair()
-
-# --- 5. CLIENT CODE ---
-# The client doesn't care if it's Modern or Victorian!
-def client_code(factory: FurnitureFactory):
-    chair = factory.create_chair()
-    print(f"Result: {chair.sit_on()}")
-
-client_code(ModernFactory())`,
-    javascript: `// JS implementation...`,
-    java: `// Java implementation...`
-  }
+// --- COMPONENTE MODAL ---
+const FullscreenModal = ({ 
+  isOpen, 
+  onClose, 
+  title, 
+  children 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  title: string; 
+  children: React.ReactNode 
+}) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[200] bg-white flex flex-col animate-in fade-in zoom-in duration-200">
+      <div className="h-16 border-b border-slate-100 flex items-center justify-between px-8 bg-slate-50/50">
+        <span className="text-sm font-bold text-slate-900 uppercase tracking-widest">{title}</span>
+        <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-500">
+          <X size={20} />
+        </button>
+      </div>
+      <div className="flex-1 overflow-hidden p-8 md:p-12 bg-slate-50/30">
+        <div className="max-w-6xl mx-auto h-full flex flex-col">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
 };
 
-export default function PatternExplorer() {
-  const [lang, setLang] = useState<Language>("python");
-  const [output, setOutput] = useState<string>("");
-  const [isRunning, setIsRunning] = useState(false);
+// --- PÁGINA PRINCIPAL ---
+export default function SimplePatternsPage() {
+  const [currentId, setCurrentId] = useState<string>("abstract-factory");
+  const [lang, setLang] = useState<Language>(LANGUAGES[0]);
+  const [copied, setCopied] = useState(false);
+  const [modalType, setModalType] = useState<"code" | "diagram" | null>(null);
 
-  const simulateExecution = () => {
-    setIsRunning(true);
-    setOutput("");
-    gsap.delayedCall(1.2, () => {
-      setIsRunning(false);
-      const result = ">>> Loading Factory...\n>>> Production: ModernChair created.\n>>> Result: Sitting on a sleek Modern Chair.";
-      setOutput(result);
-    });
+  const pattern: PatternData = PATTERNS_REGISTRY[currentId];
+  const categories = Array.from(new Set(Object.values(PATTERNS_REGISTRY).map(p => p.category)));
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(pattern.code[lang]);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F9FAFB] text-slate-900 font-sans antialiased">
+    <div className="flex h-screen bg-white text-slate-900 font-sans selection:bg-blue-100 overflow-hidden">
       
-      {/* Sidebar */}
-      <aside className="w-72 border-r border-slate-200 bg-white hidden lg:flex flex-col sticky top-0 h-screen">
-        <div className="p-8 flex items-center gap-3">
-          <div className="bg-indigo-600 p-2 rounded-xl"><Boxes className="w-5 h-5 text-white" /></div>
-          <span className="font-bold text-xl tracking-tight">PatternFlow</span>
+      {/* 1. SIDEBAR */}
+      <aside className="w-64 border-r border-slate-100 bg-slate-50/50 flex flex-col shrink-0 h-full">
+        <div className="p-6 border-b border-slate-100 flex items-center gap-2 font-bold text-slate-900">
+          <Box size={20} className="text-blue-600" />
+          <span className="tracking-tight">Design Patterns</span>
         </div>
-        <nav className="flex-1 px-4 py-4 space-y-1">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">Catalog</p>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold bg-indigo-50 text-indigo-600">
-            <Layers className="w-4 h-4" /> Abstract Factory <ChevronRight className="w-4 h-4 ml-auto" />
-          </button>
+        <nav className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
+          {categories.map(cat => (
+            <div key={cat}>
+              <h3 className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{cat}</h3>
+              <div className="space-y-1">
+                {Object.values(PATTERNS_REGISTRY).filter(p => p.category === cat).map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => setCurrentId(p.id)}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-all ${
+                      currentId === p.id ? "bg-blue-600 text-white shadow-sm font-medium" : "text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    <Hash size={14} className={currentId === p.id ? "text-blue-200" : "text-slate-300"} />
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </nav>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 px-8 py-12 lg:px-16 overflow-y-auto">
-        <div className="max-w-6xl mx-auto">
+      {/* 2. ÁREA PRINCIPAL */}
+      <main className="flex-1 overflow-y-auto custom-scrollbar bg-white">
+        <div className="max-w-5xl mx-auto p-8 md:p-16 space-y-12">
           
-          {/* Header */}
-          <header className="mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase mb-6 border border-indigo-100">
-              <Cpu className="w-3 h-3" /> {PATTERN.category}
+          <header className="space-y-4">
+            <div className="flex items-center gap-2 text-blue-600 text-xs font-bold uppercase tracking-wider">
+              <ChevronRight size={14} /> {pattern.category}
             </div>
-            <h1 className="text-6xl font-black tracking-tight mb-6">{PATTERN.name}</h1>
-            <p className="text-xl text-slate-500 font-medium max-w-2xl leading-relaxed">{PATTERN.description}</p>
+            <h1 className="text-5xl font-black tracking-tight text-slate-950">{pattern.name}</h1>
+            <p className="text-xl text-slate-500 leading-relaxed max-w-3xl italic">{pattern.description}</p>
           </header>
 
-          {/* Quick Explanation Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-            {PATTERN.roles.map((role, i) => (
-              <div key={i} className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-indigo-300 transition-colors group">
-                <role.icon className="w-5 h-5 text-indigo-500 mb-3 group-hover:scale-110 transition-transform" />
-                <h4 className="text-sm font-bold text-slate-900 mb-1">{role.title}</h4>
-                <p className="text-xs text-slate-500 leading-normal">{role.description}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             
-            {/* LEFT: Analysis & Diagram */}
-            <div className="xl:col-span-5 space-y-8">
-              <section>
-                <div className="flex items-center gap-2 mb-6">
-                  <Microscope className="w-4 h-4 text-indigo-600" />
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Architectural Blueprint</h3>
-                </div>
-                <div className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm">
-                  
-                  <MermaidDiagram chart={PATTERN.diagram} />
-                  <div className="mt-6 pt-6 border-t border-slate-100">
-                    <p className="text-[11px] font-medium text-slate-400 uppercase mb-3 tracking-tighter">Diagram Guide:</p>
-                    <ul className="space-y-2">
-                      <li className="text-xs text-slate-600 flex gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1" />
-                        <span><strong>Arrows (Inheritance):</strong> ModernFactory <i>is a</i> type of FurnitureFactory.</span>
-                      </li>
-                      <li className="text-xs text-slate-600 flex gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1" />
-                        <span><strong>Interface:</strong> FurnitureFactory defines the "rules" but doesn't build anything itself.</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </section>
+            {/* IZQUIERDA: DIAGRAMA (RENDERIZADO) */}
+            <div className="lg:col-span-7 space-y-10">
+              <div className="group relative aspect-video bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center overflow-hidden p-6 shadow-inner">
+                <button 
+                  onClick={() => setModalType("diagram")} 
+                  className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur border border-slate-200 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-blue-600 z-10"
+                >
+                  <Maximize2 size={16} />
+                </button>
+                <Mermaid chart={pattern.diagram} />
+              </div>
 
-              <section className="bg-slate-900 rounded-[2.5rem] p-8 text-white">
-                <h4 className="font-bold flex items-center gap-2 mb-4"><BookOpen className="w-4 h-4 text-indigo-400" /> Key Takeaway</h4>
-                <p className="text-sm text-slate-400 leading-relaxed">
-                  Use this pattern when you have **related objects** (like a chair and a sofa) that must match (both must be "Modern"). It prevents the client from accidentally mixing a Victorian Chair with a Modern Sofa.
-                </p>
-              </section>
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase text-slate-400 tracking-widest">Roles & Responsabilidades</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {pattern.roles.map((role: PatternRole, i: number) => (
+                    <div key={i} className="p-4 border border-slate-100 rounded-lg bg-white shadow-[0_2px_4px_rgba(0,0,0,0.02)]">
+                      <div className="flex items-center gap-2 mb-1 text-slate-900 font-bold text-xs uppercase">
+                        <role.icon size={14} className="text-blue-500" />
+                        {role.title}
+                      </div>
+                      <p className="text-xs text-slate-500 leading-normal italic">{role.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* RIGHT: The Lab */}
-            <div className="xl:col-span-7">
-              <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-xl overflow-hidden flex flex-col h-full border-b-4 border-b-slate-200">
-                <div className="flex items-center justify-between px-8 py-5 bg-slate-50/50 border-b border-slate-100">
+            {/* DERECHA: CÓDIGO (SCROLL Y) */}
+            <div className="lg:col-span-5">
+              <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm sticky top-8 flex flex-col">
+                <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center shrink-0">
                   <div className="flex gap-4">
-                    {LANGUAGES.map((l) => (
-                      <button key={l} onClick={() => setLang(l)} className={`text-[10px] font-black uppercase tracking-widest ${lang === l ? "text-indigo-600 border-b-2 border-indigo-600" : "text-slate-400"}`}>{l}</button>
+                    {LANGUAGES.map(l => (
+                      <button key={l} onClick={() => setLang(l)} className={`text-[10px] font-bold uppercase transition-colors ${lang === l ? "text-blue-600 border-b-2 border-blue-600" : "text-slate-400 hover:text-slate-600"}`}>{l}</button>
                     ))}
                   </div>
-                  <button onClick={simulateExecution} disabled={isRunning} className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-indigo-600 transition-all">
-                    {isRunning ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3 fill-current" />}
-                    {isRunning ? "Computing..." : "Run"}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setModalType("code")} className="text-slate-400 hover:text-blue-600 p-1"><Maximize2 size={14} /></button>
+                    <button onClick={handleCopy} className="text-slate-400 hover:text-slate-600 p-1">{copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}</button>
+                  </div>
                 </div>
-
-                <div className="flex-1 text-sm bg-white overflow-y-auto max-h-[450px]">
-                  <SyntaxHighlighter language={lang} style={oneLight} customStyle={{ margin: 0, padding: '2.5rem', background: 'transparent' }}>
-                    {PATTERN.code[lang]}
+                
+                <div className="bg-white max-h-[500px] overflow-y-auto custom-scrollbar border-b border-slate-100">
+                  <SyntaxHighlighter language={lang} style={vs} customStyle={{ margin: 0, padding: '1.5rem', fontSize: '11px', background: 'transparent' }}>
+                    {pattern.code[lang]}
                   </SyntaxHighlighter>
                 </div>
-
-                <div className="bg-[#0f172a] p-8 min-h-[160px] font-mono border-t border-slate-800">
-                  <div className="flex items-center gap-2 mb-4 text-slate-500 uppercase text-[9px] font-bold tracking-widest"><Terminal className="w-3 h-3" /> Output Log</div>
-                  <pre className="text-xs text-emerald-400 leading-relaxed">{output || "Waiting for signal..."}</pre>
+                
+                <div className="px-4 py-2 bg-slate-50 text-[9px] text-slate-400 font-mono flex justify-between uppercase italic">
+                  <span>Lines: {pattern.code[lang].split('\n').length}</span>
+                  <span>Read_Only</span>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </main>
+
+      {/* 3. MODALES */}
+      <FullscreenModal isOpen={modalType === "diagram"} onClose={() => setModalType(null)} title={`Esquema: ${pattern.name}`}>
+        <div className="flex-1 overflow-auto bg-white rounded-2xl border border-slate-100 flex items-center justify-center p-8 custom-scrollbar">
+          <div className="min-w-[800px]">
+            <Mermaid chart={pattern.diagram} />
+          </div>
+        </div>
+      </FullscreenModal>
+
+      <FullscreenModal isOpen={modalType === "code"} onClose={() => setModalType(null)} title={`Source Code: ${pattern.name} (${lang})`}>
+        <div className="flex-1 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-inner custom-scrollbar">
+          <SyntaxHighlighter language={lang} style={vs} customStyle={{ padding: '2.5rem', fontSize: '14px', margin: 0 }}>
+            {pattern.code[lang]}
+          </SyntaxHighlighter>
+        </div>
+      </FullscreenModal>
+
     </div>
   );
 }
