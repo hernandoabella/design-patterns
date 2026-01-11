@@ -27,18 +27,108 @@ export const PATTERNS_REGISTRY: Record<string, PatternData> = {
         name: "Abstract Factory",
         category: "Creational",
         tagline: "The Factory of Factories.",
-        description: "Proporciona una interfaz para crear familias de objetos relacionados.",
+        description: "Provides an interface for creating families of related or dependent objects without specifying their concrete classes.",
         diagram: `classDiagram
-      class FurnitureFactory { <<interface>> +createChair() Chair }
-      FurnitureFactory <|-- ModernFactory`,
+      class FurnitureFactory { <<interface>> +createChair() Chair +createSofa() Sofa }
+      class ModernFactory { +createChair() ModernChair +createSofa() ModernSofa }
+      class VictorianFactory { +createChair() VictorianChair +createSofa() VictorianSofa }
+      class Chair { <<interface>> +sitOn() }
+      class Sofa { <<interface>> +layOn() }
+      FurnitureFactory <|-- ModernFactory
+      FurnitureFactory <|-- VictorianFactory
+      Chair <|-- ModernChair
+      Chair <|-- VictorianChair
+      Sofa <|-- ModernSofa
+      Sofa <|-- VictorianSofa`,
         roles: [
-            { title: "Abstract Factory", description: "Interfaz para creación.", icon: Boxes },
-            { title: "Concrete Factory", description: "Implementación real.", icon: Zap }
+            {
+                title: "Abstract Factory",
+                description: "Declares a set of methods for creating each of the abstract products.",
+                icon: Boxes
+            },
+            {
+                title: "Concrete Factory",
+                description: "Implements the creation methods of the abstract factory. Each concrete factory corresponds to a specific variant of products.",
+                icon: Zap
+            },
+            {
+                title: "Abstract Product",
+                description: "Declares interfaces for a set of distinct but related products that make up a product family.",
+                icon: Layout
+            },
+            {
+                title: "Concrete Product",
+                description: "Specific implementations of abstract products, grouped by variants.",
+                icon: Fingerprint
+            }
         ],
         code: {
-            python: `class ModernChair: pass`,
-            javascript: `// JS Code`,
-            java: `// Java Code`
+            python: `from abc import ABC, abstractmethod
+
+# --- 1. ABSTRACT PRODUCTS ---
+class Chair(ABC):
+    @abstractmethod
+    def sit_on(self): pass
+
+class Sofa(ABC):
+    @abstractmethod
+    def lay_on(self): pass
+
+# --- 2. CONCRETE PRODUCTS (Modern Family) ---
+class ModernChair(Chair):
+    def sit_on(self): return "Sitting on a modern chair."
+
+class ModernSofa(Sofa):
+    def lay_on(self): return "Lying on a modern sofa."
+
+# --- 3. ABSTRACT FACTORY ---
+class FurnitureFactory(ABC):
+    @abstractmethod
+    def create_chair(self) -> Chair: pass
+    @abstractmethod
+    def create_sofa(self) -> Sofa: pass
+
+# --- 4. CONCRETE FACTORIES ---
+class ModernFurnitureFactory(FurnitureFactory):
+    def create_chair(self): return ModernChair()
+    def create_sofa(self): return ModernSofa()
+
+# --- 5. CLIENT CODE ---
+def client_code(factory: FurnitureFactory):
+    chair = factory.create_chair()
+    print(chair.sit_on())
+
+client_code(ModernFurnitureFactory())`,
+            javascript: `// Concrete Products
+class VictorianChair { sitOn() { return "Sitting on Victorian chair"; } }
+class VictorianSofa { layOn() { return "Lying on Victorian sofa"; } }
+
+// Concrete Factory
+class VictorianFurnitureFactory {
+  createChair() { return new VictorianChair(); }
+  createSofa() { return new VictorianSofa(); }
+}
+
+// Client
+const factory = new VictorianFurnitureFactory();
+const chair = factory.createChair();
+console.log(chair.sitOn());`,
+            java: `interface Chair { void sitOn(); }
+interface Sofa { void layOn(); }
+
+interface FurnitureFactory {
+    Chair createChair();
+    Sofa createSofa();
+}
+
+class ModernFactory implements FurnitureFactory {
+    public Chair createChair() { return new ModernChair(); }
+    public Sofa createSofa() { return new ModernSofa(); }
+}
+
+class ModernChair implements Chair {
+    public void sitOn() { System.out.println("Modern Chair Sit"); }
+}`
         }
     },
 
