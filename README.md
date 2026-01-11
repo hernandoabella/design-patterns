@@ -13,8 +13,6 @@ Design patterns are proven solutions to common software design problems. They im
 - **Singleton:** Ensures only one instance of a class exists globally.
 - **Builder:** Separates object construction from its representation, allowing the same construction process to create different representations.
 
----
-
 ## Structural Patterns (Class & Object Composition)  
 *These patterns simplify the design by organizing object relationships efficiently.*  
 
@@ -25,8 +23,6 @@ Design patterns are proven solutions to common software design problems. They im
 - **Facade:** Provides a simple interface for complex subsystems.  
 - **Flyweight:** Reduces memory usage by sharing common object instances.  
 - **Proxy:** Controls access to an object, often used for security or performance optimizations.  
-
----
 
 ## Behavioral Patterns (Object Interaction)  
 *These patterns focus on communication between objects and define workflows.*  
